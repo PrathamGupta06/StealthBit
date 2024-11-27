@@ -6,8 +6,21 @@ export default function Dashboard() {
   const [victims, setVictims] = useState([]);
 
   useEffect(() => {
-    fetchVictims().then(setVictims);
+    fetchVictims().then((data) => {
+      setVictims(data);
+      console.log(data);
+    });
+  
+    const interval = setInterval(() => {
+      fetchVictims().then((data) => {
+        setVictims(data);
+        console.log('Updated data:', data);
+      });
+    }, 10 * 1000); // 10 sec
+  
+    return () => clearInterval(interval);
   }, []);
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 md:p-8">
@@ -15,7 +28,7 @@ export default function Dashboard() {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-8">
         {victims.map((victim) => (
-          <VictimCard key={victim.id} victim={victim} />
+          <VictimCard key={victim._id} victim={victim} />
         ))}
       </div>
     </div>

@@ -8,7 +8,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/victim/:id" element={<VictimPage />} />
+        <Route path="/victim/:_id" element={<VictimPage />} />
       </Routes>
     </Router>
   );

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const requestSchema = new mongoose.Schema({
-    id: { type: mongoose.Schema.Types.ObjectId, required: true },
     victimId: { type: String, required: true },
     demand: { type : String, default : "", required: false },
     fulfilled: { type: Boolean, default: false, required: false },

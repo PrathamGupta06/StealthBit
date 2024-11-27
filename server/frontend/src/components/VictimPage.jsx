@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchVictims } from '../utils/api';
 import ActionButton from './ActionButton';
+import Sidebar from './Sidebar';
 import { Terminal, Camera, Mic, FileText, History } from 'lucide-react';
 
 const buttons = [
@@ -13,39 +14,66 @@ const buttons = [
 ];
 
 export default function VictimPage() {
-  const { id } = useParams();
+  const { _id } = useParams();
   const [victim, setVictim] = useState(null);
 
-  useEffect(() => {
+  const fetchAndUpdateVictim = () => {
     fetchVictims().then(victims => {
-      const foundVictim = victims.find(v => v.id === Number(id));
+      const foundVictim = victims.find(v => v._id === _id);
       setVictim(foundVictim || null);
     });
-  }, [id]);
+  };
+
+  useEffect(() => {
+    fetchAndUpdateVictim();
+
+    const interval = setInterval(() => {
+      fetchAndUpdateVictim();
+    }, 10 * 1000);
+
+    return () => clearInterval(interval);
+  }, [_id]);
 
   if (!victim) {
-    return <div>Victim not found!</div>;
+    return <div className='bg-gray-900'>Victim not found!</div>;
   }
 
+  const isRecentlySeen = () => {
+    const lastSeenDate = new Date(victim.lastSeen);
+    const now = new Date();
+    return (now - lastSeenDate) <= 10 * 60 * 1000;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 md:p-8">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">{victim.title}</h1>
-      <div className="w-full h-96 bg-gray-800 rounded-lg shadow-md mb-6 flex items-center justify-center overflow-hidden">
-        <img src={victim.image} alt={victim.title} className="w-full h-full object-cover" />
+    <div className="flex min-h-screen bg-gray-900 text-white">
+      <div className="flex-grow p-4 sm:p-6 md:p-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">{victim.title}</h1>
+        <div className="w-full h-96 bg-gray-800 rounded-lg shadow-md mb-6 flex items-center justify-center overflow-hidden">
+          <img src={victim.img} alt={victim.title} className="w-full h-full object-cover" />
+        </div>
+        <div className="flex items-center justify-center mb-4">
+          <span
+            className={`mr-4 mt-1 h-5 w-5 rounded-full ${isRecentlySeen() ? 'bg-green-500' : 'bg-red-500'
+              }`}
+          ></span>
+          <h3 className={`text-center text-2xl ${isRecentlySeen() ? 'text-green-500' : 'text-red-500'}`}>Last seen: {String(new Date(victim.lastSeen).toLocaleString())}</h3>
+        </div>
+
+        <h2 className="text-xl font-semibold mb-4">Request data:</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
+          {buttons.map((button, index) => (
+            <ActionButton key={index} {...button} />
+          ))}
+        </div>
+
+        <Link to="/" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
+          Back to Dashboard
+        </Link>
       </div>
-      <p className="text-xl mb-4">Details for {victim.title}</p>
-      <p className="text-lg mb-4">koiu65esrfdxgfchvjbknlm; {victim.subtitle}</p>
-      
-      <h2 className="text-xl font-semibold mb-4">Request data:</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
-        {buttons.map((button, index) => (
-          <ActionButton key={index} {...button} />
-        ))}
+      <div className="w-1/3 min-w-[300px] max-w-[400px]">
+        <Sidebar />
       </div>
-      
-      <Link to="/" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
-        Back to Dashboard
-      </Link>
     </div>
   );
 }
+
