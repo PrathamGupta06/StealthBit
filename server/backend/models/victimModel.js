@@ -6,6 +6,7 @@ const Victim = new mongoose.Schema({
     img : { type: String, required: false },
     dateCreated: { type: Date, default: Date.now, required: false },
     lastSeen: { type: Date, default: Date.now, required: false },
+    macAddress: { type: String, required: false },
 }, { strict: true})
 
 export default mongoose.model('Victim', Victim);    

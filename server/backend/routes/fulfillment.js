@@ -3,17 +3,27 @@ import Request from '../models/requestModel.js';
 import multer from 'multer';
 
 const router = Router();
-const upload = multer({ dest: 'uploads/' });
+let storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './uploads')
+    },
+    filename: function (req, file, cb) {
+      let extArray = file.mimetype.split("/");
+      let extension = extArray[extArray.length - 1];
+      cb(null, file.fieldname + '-' + Date.now()+ '.' +extension)
+    }
+  })
+const upload = multer({ storage: storage })
 
 /**
  * Handle camera picture upload
  * @route POST /api/fulfill/cameraPicture/:victimId
  */
-router.post('/cameraPicture/:victimId', upload.single('img'), async (req, res, next) => {
+router.post('/camera/:victimId', upload.single('img'), async (req, res, next) => {
     try {
         const updatedRequest = await Request.findOneAndUpdate(
-            { victimId: req.params.victimId, demand: 'cameraPicture' },
-            { fulfilled: true, fulfilledAt: req.file.destination },
+            { victimId: req.params.victimId, _id: req.body.requestId, demand: 'camera' },
+            { fulfilled: true, fulfilledAt: req.file.destination + '/' + req.file.filename },
             { new: true }
         );
         res.json(updatedRequest);

