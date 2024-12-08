@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import FriendlyDate from './FriendlyDate';
 
 export default function VictimCard({ victim }) {
   const [isOld, setIsOld] = useState(false);
 
+  useEffect(() => {
   //check if lastSeen is more than 10 minutes old
   const checkLastSeen = () => {
     const lastSeenDate = new Date(victim.lastSeen);
@@ -12,10 +14,9 @@ export default function VictimCard({ victim }) {
     const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
     setIsOld(differenceInMinutes > 10);
   };
-
-  useEffect(() => {
+  
     checkLastSeen();
-    const interval = setInterval(checkLastSeen, 10 * 1000);
+    const interval = setInterval(checkLastSeen, 3 * 1000);
     return () => clearInterval(interval); 
   }, [victim.lastSeen]);
 
@@ -32,8 +33,8 @@ export default function VictimCard({ victim }) {
         className="w-full h-48 object-cover mb-2 rounded"
       />
       <h2 className="text-lg font-semibold mb-1">{victim.title}</h2>
-      <p className="text-sm text-gray-400">{victim.description}</p>
-      <p className={`text-sm ${isOld ? 'text-red-400' : 'text-green-400'}`}>Last seen: {new Date(victim.lastSeen).toLocaleString()}</p>
+      <p className="text-sm text-gray-400 mb-2">{victim.macAddress || victim.description || " "}</p>
+      <p className={`text-sm ${isOld ? 'text-red-400' : 'text-green-400'}`}>Last seen {<FriendlyDate date={victim.lastSeen} />}</p>
     </Link>
   );
 }

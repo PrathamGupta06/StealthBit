@@ -1,9 +1,27 @@
 import React from 'react';
 import { User, FileEdit, Check, X } from 'lucide-react';
+import FriendlyDate from './FriendlyDate';
 
 const Sidebar = ({ victim, requests, onRequestClick }) => {
   const fulfilledRequests = requests.filter(request => request.fulfilled);
   const pendingRequests = requests.filter(request => !request.fulfilled);
+
+  const formattedDemand = (demand) => {
+    switch (demand) {
+      case 'camera':
+        return 'Camera';
+      case 'screenshot':
+        return 'Screenshot';
+      case 'liveAudio':
+        return 'Live Audio';
+      case 'logFiles':
+        return 'Log Files';
+      case 'browsingHistory':
+        return 'Browsing History';
+      default:
+        return 'Unknown';
+    }
+  };  
 
   return (
     <div className="bg-gray-800 text-white p-4 h-full overflow-y-auto">
@@ -11,11 +29,11 @@ const Sidebar = ({ victim, requests, onRequestClick }) => {
       <div className="space-y-4 mb-8">
         <div className="flex items-center space-x-2 p-2 rounded">
           <User size={20} />
-          <span><b>Profile: </b>{victim.macAddress}</span>
+          <span><b>Mac Address: </b>{victim.macAddress}</span>
         </div>
         <div className="flex items-center space-x-2 p-2 rounded">
           <FileEdit size={20} />
-          <span><b>Registered on: </b>{new Date(victim.dateCreated).toLocaleString()}</span>
+          <span><b>Registered: </b>{<FriendlyDate date={victim.dateCreated}/>}</span>
         </div>
       </div>
       <div className="mt-8">
@@ -29,7 +47,7 @@ const Sidebar = ({ victim, requests, onRequestClick }) => {
               onClick={() => onRequestClick(request)}
             >
               <Check size={16} className="text-green-500" />
-              <span>{request.demand} - {new Date(request.createdAt).toLocaleString()}</span>
+              <span>{formattedDemand(request.demand)} - {<FriendlyDate date={request.createdAt} />}</span>
             </li>
           ))}
         </ul>
@@ -38,7 +56,7 @@ const Sidebar = ({ victim, requests, onRequestClick }) => {
           {pendingRequests.map(request => (
             <li key={request._id} className="flex items-center space-x-2 p-2 rounded">
               <X size={16} className="text-red-500" />
-              <span>{request.demand} - {new Date(request.createdAt).toLocaleString()}</span>
+              <span>{formattedDemand(request.demand)} - {<FriendlyDate date={request.createdAt} />}</span>
             </li>
           ))}
         </ul>

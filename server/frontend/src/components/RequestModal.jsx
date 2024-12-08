@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import FriendlyDate from './FriendlyDate';
 
 const RequestModal = ({ request, onClose }) => {
   const [content, setContent] = useState(null);
@@ -71,8 +72,8 @@ const RequestModal = ({ request, onClose }) => {
           </button>
         </div>
         <div className="mb-4">
-          <p><strong>Created:</strong> {new Date(request.createdAt).toLocaleString()}</p>
-          <p><strong>Fulfilled:</strong> {new Date(request.updatedAt).toLocaleString()}</p>
+          <p><strong>Created:</strong> {<FriendlyDate date={request.createdAt} />}</p>
+          <p><strong>Fulfilled:</strong> {<FriendlyDate date={request.createdAt} />}</p>
         </div>
         <div className="bg-gray-700 rounded p-4">
           {renderContent()}

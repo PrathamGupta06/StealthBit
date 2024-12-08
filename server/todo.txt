@@ -1,5 +1,0 @@
-mac ID
-security -> 
-all malwares can access all routes,
-retyrn onky vicum id upon reg,
-/fulfillment implmenet max file size

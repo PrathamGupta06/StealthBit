@@ -16,7 +16,7 @@ export default function Dashboard() {
         setVictims(data);
         console.log('Updated data:', data);
       });
-    }, 10 * 1000); // 10 sec
+    }, 3 * 1000); 
   
     return () => clearInterval(interval);
   }, []);
