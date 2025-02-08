@@ -49,13 +49,6 @@ router.get('/request/:requestId', async (req, res, next) => {
         next(err);
     }
 });
-/**
- * Health check for client route
- * @route GET /api/client/health
- */
-router.get('/health', (req, res) => {
-    res.send('Client route OK');
-});
 
 export default router;
 

